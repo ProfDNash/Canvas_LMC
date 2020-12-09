@@ -77,7 +77,7 @@ def readGZs(): ##generate dictionary of pandas DFs with pertinent columns
                     'workflow_state','sortable_name','global_canvas_id']
     
     
-    path = 'C:/Users/ProfN/Documents/GitHub/Canvas_LMC/'
+    path = 'C:/Users/ProfN/Documents/GitHub/Canvas_LMC/Canvas_LMC/'
     files = []
     DF_dict = {}
     for file in os.listdir(path):
@@ -323,26 +323,29 @@ def readGZs(): ##generate dictionary of pandas DFs with pertinent columns
                 for col in ['course_id', 'course_account_id']:
                     temp[col] = temp[col].apply(lambda x: np.nan if x==r'\N'
                                                 else int(x)-KEYDIFF)
-                DF_dict[file] = temp
+                DF_dict[file] = temp.copy()
                 '''
-                Next, we will convert the data to view counts and action counts
-                grouped by student, course, and day
+                Next, we will extract the hour of the day from the timestamp
+                and convert the data to view counts and action counts
+                grouped by student, course, day, and hour
                 First, drop all unnecessary columns
                 '''
-                temp.drop(columns=['url','timestamp','course_account_id',
+                temp['hour'] = temp.timestamp.apply(lambda x: int(x.split()[1][:2]))
+                temp.drop(columns=['url','course_account_id', 'timestamp',
                                    'quiz_id','discussion_id','conversation_id',
                                    'assignment_id','web_application_controller',
                                    'web_application_context_type','session_id',
                                    'web_application_action', 'id'], inplace=True)
                 temp_views = temp[temp.http_method==0]
-                temp_views = temp_views.groupby(by=['timestamp_day','course_id',
+                temp_views = temp_views.groupby(by=['timestamp_day','hour',
+                                                    'course_id',
                                                     'user_id']).count()
                 temp_views.rename(columns={'http_method':'daily_views'},
                                   inplace=True)
                 ##recreate columns for grouped vars
                 temp_views = temp_views.reset_index()
                 temp_actions = temp[temp.http_method==1]
-                temp_actions = temp_actions.groupby(by=['timestamp_day',
+                temp_actions = temp_actions.groupby(by=['timestamp_day','hour',
                                                         'course_id',
                                                         'user_id']).count()
                 temp_actions.rename(columns={'http_method':'daily_actions'},
@@ -351,7 +354,7 @@ def readGZs(): ##generate dictionary of pandas DFs with pertinent columns
                 temp_actions = temp_actions.reset_index()
                 ##recombine the two tables to get both counts together
                 temp = pd.merge(temp_views,temp_actions,'outer',
-                                on=['timestamp_day','course_id','user_id'])
+                                on=['timestamp_day','hour','course_id','user_id'])
                 ##fill NAs with zeros
                 temp.fillna(0, inplace=True)
                 ##change datatypes to ints
