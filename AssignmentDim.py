@@ -55,6 +55,7 @@ def readAssignmentDim(): ##generate pandas DataFrame and update SQL db
                 same for AUTOMATIC_PEER_REVIEWS
                 VISIBILITY appears to always be the same in this dataset
                 drop DESCRIPTION for now
+                drop PEER_REVIEW_COUNT as unneeded info
                 '''
                 print('Reading data from:', file)
                 temp = pd.read_csv(path+file, compression='gzip', 
@@ -65,7 +66,7 @@ def readAssignmentDim(): ##generate pandas DataFrame and update SQL db
                                    'anonymous_peer_reviews','all_day_date',
                                    'grade_group_students_individually',
                                    'automatic_peer_reviews','visibility',
-                                   'description',]
+                                   'description','peer_review_count']
                           , inplace=True)
                 '''
                 Drop all assignments that are not visible to students
@@ -93,10 +94,17 @@ def readAssignmentDim(): ##generate pandas DataFrame and update SQL db
                 '''
                 subtract KEY DIFF from EXTERNAL_TOOL_ID and replace \ N
                 subtract KEY DIFF from COURSE_ID
+                subtract KEY DIFF from ASSIGNMENT_GROUP_ID
                 '''
                 temp.external_tool_id = temp.external_tool_id.apply(
                     lambda x: np.nan if x==r'\N' else int(x)-KEYDIFF)
                 temp.course_id = temp.course_id.apply(lambda x: int(x)-KEYDIFF)
+                temp.assignment_group_id = temp.assignment_group_id.apply(
+                    lambda x: int(x)-KEYDIFF)
+                '''
+                rename CANVAS_ID as ID
+                '''
+                temp.rename(columns={'canvas_id':'id'}, inplace=True)
                 assignment_dim_df = temp
             else:
                 pass
