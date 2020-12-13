@@ -50,14 +50,22 @@ def readAssignmentDim(): ##generate pandas DataFrame and update SQL db
                 UNLOCK_AT and LOCK_AT are unnecessary for now
                 CREATED_AT and UPDATED_AT and PEER_REVIEWS_DUE_AT are no needed
                 ANONYMOUS_PEER_REVIEWS is essentially always false
+                ALL_DAY and ALL_DAY_DATE are not being used since we have DUE_DATE
+                GRADE_GROUP_STUDENTS_INDIVIDUALLY is essentially always false
+                same for AUTOMATIC_PEER_REVIEWS
+                VISIBILITY appears to always be the same in this dataset
+                drop DESCRIPTION for now
                 '''
                 print('Reading data from:', file)
                 temp = pd.read_csv(path+file, compression='gzip', 
                                    sep='\t', names=accountdim_cols)
                 temp.drop(columns=['id','position','muted','could_be_locked',
                                    'unlock_at','lock_at','created_at',
-                                   'updated_at','peer_reviews_due_at',
-                                   'anonyous_peer_reviews']
+                                   'updated_at','peer_reviews_due_at','all_day',
+                                   'anonymous_peer_reviews','all_day_date',
+                                   'grade_group_students_individually',
+                                   'automatic_peer_reviews','visibility',
+                                   'description',]
                           , inplace=True)
                 '''
                 Drop all assignments that are not visible to students
@@ -83,8 +91,12 @@ def readAssignmentDim(): ##generate pandas DataFrame and update SQL db
                 temp.grading_type = temp.grading_type.apply(
                     lambda x: grade_type[x]).astype(int)
                 '''
-                convert EXTERNAL_TOOL_ID to 
+                subtract KEY DIFF from EXTERNAL_TOOL_ID and replace \ N
+                subtract KEY DIFF from COURSE_ID
                 '''
+                temp.external_tool_id = temp.external_tool_id.apply(
+                    lambda x: np.nan if x==r'\N' else int(x)-KEYDIFF)
+                temp.course_id = temp.course_id.apply(lambda x: int(x)-KEYDIFF)
                 assignment_dim_df = temp
             else:
                 pass
