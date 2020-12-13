@@ -34,7 +34,7 @@ def hourlyViz():
     hourly_result_set = hourly_result_proxy.fetchall()
     hourly_df = pd.DataFrame(hourly_result_set, 
                              columns=['hourly_views','hourly_actions'])
-    hourly_df.reset_index(inplace=True)
+    hourly_df.reset_index(inplace=True)  ##gives an index column to use
     ##plot query information##
     sns.set_palette('viridis',24)
     fig, (ax1, ax2) = plt.subplots(ncols=2, figsize=(20,6))
