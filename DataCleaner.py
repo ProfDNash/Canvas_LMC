@@ -169,7 +169,7 @@ def readGZs(): ##generate dictionary of pandas DFs with pertinent columns
                 DF_dict[file] = temp
             elif 'course_ui_canvas' in file:
                 '''SKIP THIS BECAUSE IT IS NOT USEFUL TO US'''
-                ##Recast default as a boolean 1='Default' 0='NotDefault'
+                ###Recast default as a boolean 1='Default' 0='NotDefault'
                 #temp = pd.read_csv(path+file, compression='gzip', 
                 #                            sep='\t', names=cUIcanNAvdim_cols)
                 #default_dict = {'Default':True, 'NotDefault':False}
@@ -199,10 +199,10 @@ def readGZs(): ##generate dictionary of pandas DFs with pertinent columns
                 COURSE_UI_NAVIGATION_ITEM_ID appears to contain COURSE_ID
                 return to this later for more efficiency.
                 '''
-                #temp = pd.read_csv(path+file, compression='gzip', 
-                #                            sep='\t', names=cUInavITEMfact_cols)
-                #temp.drop(columns=['root_account_id'], inplace=True)
-                #DF_dict[file] = temp
+                temp = pd.read_csv(path+file, compression='gzip', 
+                                            sep='\t', names=cUInavITEMfact_cols)
+                temp.drop(columns=['root_account_id'], inplace=True)
+                DF_dict[file] = temp
                 ##SKIP THIS ONE FOR NOW IT SEEMS UNNECESSARY
             elif 'pseudonym_dim' in file:
                 '''AUTHENTICATION_PROVIDER_ID is not useful information
@@ -411,12 +411,13 @@ Table_names = ['Account_Dim','Communication_Channel_Dim','Communication_Channel_
                'Course_UI_Navigation_Item_Dim','Course_UI_Navigation_Item_Fact',
                'Pseudonym_Dim', 'Pseudonym_Fact', 'Requests', 'User_Dim',
                'Requests_Counts']
-for i in range(12):
-    if i!=2 and i!=4 and i!=5 and i!=6 and i!=9 and i!=11:
-        DF_dict[files[i]].to_sql(Table_names[i], con=engine, if_exists='replace')
-    elif i==11:
-        DF_dict['Requests_Counts'].to_sql(Table_names[i], con=engine,
-                                          if_exists='replace')
+
+#for i in range(12):
+#    if i!=2 and i!=4 and i!=5 and i!=6 and i!=9 and i!=11:
+#        DF_dict[files[i]].to_sql(Table_names[i], con=engine, if_exists='replace')
+#    elif i==11:
+#        DF_dict['Requests_Counts'].to_sql(Table_names[i], con=engine,
+#                                          if_exists='replace')
 
 df0 = DF_dict[files[0]]
 df1 = DF_dict[files[1]]
@@ -429,7 +430,7 @@ df3Recent = df3[df3.created_at>'2020-01-01']
 ##SKIP DF4, DF5, and DF6 AS THEY SEEM UNNECESSARY##
 #df4 = DF_dict[files[4]]
 #df5 = DF_dict[files[5]]
-#df6 = DF_dict[files[6]]
+df6 = DF_dict[files[6]]
 df7 = DF_dict[files[7]]
 df8 = DF_dict[files[8]]
 df9 = DF_dict[files[9]]
@@ -448,5 +449,4 @@ dfCounts = DF_dict['Requests_Counts']
 #for item in by_code2.get_xticklabels():
 #    item.set_rotation(90)
 #plt.show()
-
 
