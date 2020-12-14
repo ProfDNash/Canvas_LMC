@@ -66,6 +66,24 @@ def readAssignmentGroupDim(): ##generate pandas DataFrame and update SQL db
             parse the NAME column to reduce the number of possibilities to a
             few options.
             '''
+            temp['HW'] = temp.name.apply(lambda x: 'homework' in x.lower()
+                                         or 'hw' in x.lower())
+            temp['Quiz'] = temp.name.apply(lambda x: 'quiz' in x.lower())
+            temp['Exam'] = temp.name.apply(lambda x: 'exam' in x.lower()
+                                         or 'test' in x.lower()
+                                         or 'midterm' in x.lower())
+            temp['Attendance'] = temp.name.apply(lambda x: 
+                                                 'attendance' in x.lower())
+            temp['Participation'] = temp.name.apply(lambda x: 
+                                                    'particip' in x.lower()
+                                         or 'classwork' in x.lower())
+            temp['Discussion'] = temp.name.apply(lambda x: 
+                                                 'discuss' in x.lower())
+            temp['Paper'] = temp.name.apply(lambda x: 'paper' in x.lower()
+                                         or 'essay' in x.lower())
+            temp['Reading'] = temp.name.apply(lambda x: 'read' in x.lower()
+                                              or 'literature' in x.lower())
+            temp['Generic'] = temp.eval('not(HW or Quiz or Exam or Attendance or Participation or Discussion or Paper or Reading)')
             
         else:
             pass
