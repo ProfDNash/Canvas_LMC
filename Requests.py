@@ -20,7 +20,9 @@ as integers instead of strings.'''
 
 KEYDIFF = 15270000000000000
 ##List of known faculty user_ids
-faculty = [454254935450860033,352329503483327465,]
+faculty = [454254935450860033,352329503483327465,461510280206911953,
+           260399413616254107,446354931750470913,459297289574575361,
+           13494308845404191,-111579948995598634,-439233688573536041]
 
 def readRequests(): ##generate pandas DataFrame and update SQL db
     ##define column headers account_dim Canvas flat file
@@ -82,13 +84,16 @@ def readRequests(): ##generate pandas DataFrame and update SQL db
             only instructors and IT can masquerade as other users, so
             we remove all rows with REAL_USER_ID not null, and drop that col.
             Moreover, if USER_ID is missing, we drop that request
+            We also drop requests from known faculty IDs
             '''
             temp = temp[temp.developer_key_id==r'\N']
             temp = temp[temp.real_user_id==r'\N']
             temp.drop(columns=['developer_key_id', 'real_user_id'],
                       inplace=True)
             temp = temp[temp.user_id!=r'\N'] ##drop requests with no user_id
-            
+            temp['fac'] = temp.user_id.apply(lambda x: x in faculty)
+            temp = temp[temp.fac!=True]
+            temp.drop(columns=['fac'], inplace=True)
             
             '''
             if URL contains 'undefined', then the request went to a missing
@@ -144,20 +149,20 @@ def readRequests(): ##generate pandas DataFrame and update SQL db
             '''
             Next, we will extract the hour of the day from the timestamp
             and convert the data to view counts and action counts
-            grouped by student, course, course_account, day, and hour
+            grouped by course, course_account, day, and hour
             First, drop all unnecessary columns
             '''
             temp['hour'] = temp.timestamp.apply(lambda x: int(x.split()[1][:2]))
-            temp.drop(columns=['url', 'timestamp',
+            temp.drop(columns=['url', 'timestamp', 'user_id',
                                'quiz_id','discussion_id','conversation_id',
                                'assignment_id','web_application_controller',
                                'web_application_context_type','session_id',
                                'web_application_action', 'id'], inplace=True)
             ##First for page_views -- http_method==GET
             temp_views = temp[temp.http_method==0]
-            temp_views = temp_views.groupby(by=['timestamp_day','hour',
-                                                'course_id','course_account_id',
-                                                'user_id']).count()
+            temp_views = temp_views.groupby(by=['course_account_id','course_id',
+                                                'timestamp_day','hour'
+                                                ]).count()
             temp_views.rename(columns={'http_method':'hourly_views'},
                               inplace=True)
             ##recreate columns for grouped vars
@@ -165,16 +170,16 @@ def readRequests(): ##generate pandas DataFrame and update SQL db
             
             ##Next for "actions" -- http_method==POST
             temp_actions = temp[temp.http_method==1]
-            temp_actions = temp_actions.groupby(by=['timestamp_day','hour',
-                                                    'course_id','course_account_id',
-                                                    'user_id']).count()
+            temp_actions = temp_actions.groupby(by=['course_account_id','course_id',
+                                                    'timestamp_day','hour'
+                                                    ]).count()
             temp_actions.rename(columns={'http_method':'hourly_actions'},
                                 inplace=True)
             ##recreate columns for groups vars
             temp_actions = temp_actions.reset_index()
             ##recombine the two tables to get both counts together
             temp = pd.merge(temp_views,temp_actions,'outer',
-                            on=['course_account_id','course_id','user_id',
+                            on=['course_account_id','course_id',
                                 'timestamp_day','hour'])
             ##fill NAs with zeros
             temp.fillna(0, inplace=True)
@@ -186,9 +191,9 @@ def readRequests(): ##generate pandas DataFrame and update SQL db
             pass
 
     ##UPDATE SQL DB##
-    print('Building/Appending to Canvas DB')
-    engine = create_engine('sqlite:///Canvas.db', echo=False)
-    requests_agg.to_sql('Requests_Counts',con=engine,if_exists='replace')
+    #print('Building/Appending to Canvas DB')
+    #engine = create_engine('sqlite:///Canvas.db', echo=False)
+    #requests_agg.to_sql('Requests_Counts',con=engine,if_exists='replace')
     
     return file_name, requests_full, requests_agg
 
