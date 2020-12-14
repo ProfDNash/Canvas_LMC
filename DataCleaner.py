@@ -33,7 +33,9 @@ as integers instead of strings.'''
 
 KEYDIFF = 15270000000000000
 ##List of known faculty user_ids
-faculty = [454254935450860033,352329503483327465,]
+faculty = [454254935450860033,352329503483327465,461510280206911953,
+           260399413616254107,446354931750470913,459297289574575361,
+           13494308845404191,-111579948995598634,-439233688573536041]
 
 def readGZs(): ##generate dictionary of pandas DFs with pertinent columns
     ##define column headers for different types of Canvas flat files
