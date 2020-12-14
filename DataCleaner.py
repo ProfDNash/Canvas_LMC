@@ -19,6 +19,12 @@ from sqlalchemy import create_engine ##for converting DF to DB
 ## strip_multiple_whitespaces, remove_stopwords, strip_short
 #import gensim.parsing.preprocessing as pp
 #from gensim.models import Word2Vec # Word2vec
+'''With the complete set of datafiles available from Canvas, some of them
+will never be useful for our purposes, so delete/ignore those.  They include:
+'assignment_group_rule_dim'
+all 'override' files
+'assignment_rule_dim'
+'''
 
 '''Nearly all user ids in canvas have been converted to big int by adding
 15270000000000000.  We undo that expansion throughout.
